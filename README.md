@@ -6,6 +6,8 @@ Visualizador 3D interactivo del relieve del Perú hecho con **WebGL** (Three.js)
 Descarga datos reales de altura y fotos satelitales y los muestra en 3D: nevados, volcanes, cañones,
 lagos, ciudades y sitios arqueológicos, con agua, sol y sombras en tiempo real.
 
+**▶ Ver en línea: <https://ryojiwatanabe625-cell.github.io/visor-terreno-peru/>**
+
 ![Tipo de proyecto](https://img.shields.io/badge/WebGL-Three.js%200.170-blue) ![Lenguaje](https://img.shields.io/badge/GLSL-shaders%20propios-green)
 
 ---
