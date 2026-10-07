@@ -1,0 +1,87 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #9cc3e6;
+  font-family: sans-serif;
+}
+
+/* ---------- Panel de control ---------- */
+#info {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  max-width: calc(100vw - 44px);
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: #000a;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.6;
+}
+select, input[type=text], button { font-size: 14px; padding: 2px 4px; }
+#coords { width: 170px; }
+#nivel, #hora { width: 150px; vertical-align: middle; }
+
+/* Leyenda de colores por altura */
+#leyenda { display: none; margin-top: 6px; }
+#barra {
+  width: 260px;
+  height: 10px;
+  border-radius: 3px;
+  background: linear-gradient(to right,
+    #1f5f3a 0%, #7fb069 18.2%, #e9d98b 45.5%, #a8794a 63.6%, #8a8a8a 81.8%, #ffffff 100%);
+}
+#marcas { position: relative; width: 260px; height: 14px; font-size: 11px; }
+#marcas span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+#marcas span:first-child { transform: none; }
+#marcas span:last-child { left: auto !important; right: 0; transform: none; }
+
+/* ---------- Etiquetas de lugares (puntos de interés) ---------- */
+#etiquetas { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.poi {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -100%);
+}
+.poi span {
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: #fffe;
+  color: #222;
+  font-size: 12px;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px #0005;
+}
+.poi i { width: 2px; height: 16px; background: #fffc; }
+
+/* ---------- Etiqueta del punto donde se hizo clic ---------- */
+#etiqueta {
+  position: absolute;
+  z-index: 1;
+  display: none;
+  pointer-events: none;
+  transform: translate(-50%, calc(-100% - 8px));
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: #fff;
+  color: #222;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: center;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px #0005;
+}
+#etiqueta b { font-size: 16px; }
+
+#creditos {
+  position: absolute;
+  right: 6px;
+  bottom: 4px;
+  color: #fffc;
+  font-size: 11px;
+  text-shadow: 0 0 3px #000;
+  pointer-events: none;
+}
