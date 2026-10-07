@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Visor de Terreno del Perú</title>
+  <link rel="stylesheet" href="css/estilos.css">
+  <script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }}
+  </script>
+</head>
+<body>
+  <div id="info">
+    <select id="lugar"></select>
+    <select id="tamano">
+      <option value="3">Zona normal</option>
+      <option value="5">Zona grande</option>
+      <option value="7">Zona muy grande</option>
+    </select>
+    <div>Coordenadas: <input type="text" id="coords" placeholder="-13.16, -72.54">
+      <select id="zoomPropio">
+        <option value="9">Zoom 9</option><option value="10">Zoom 10</option>
+        <option value="11" selected>Zoom 11</option><option value="12">Zoom 12</option>
+        <option value="13">Zoom 13</option><option value="14">Zoom 14</option>
+      </select>
+      <button id="ir">Ir</button></div>
+    <div id="datos">Cargando…</div>
+    <div><span id="foto"></span> <button id="volver" disabled>⟵ Volver</button></div>
+    <div>Agua: <input type="range" id="nivel" step="1"> <span id="nivelTxt">sin agua</span></div>
+    <div>Hora: <input type="range" id="hora" min="6.5" max="17.5" step="any"> <span id="horaTxt"></span></div>
+    <div id="leyenda"><div id="barra"></div>
+      <div id="marcas"><span style="left:2%">0</span><span style="left:36.4%">2000</span>
+        <span style="left:72.7%">4000</span><span style="left:96%">5500 m</span></div></div>
+    <b>Clic</b> en el terreno: ver altura · <b>Esc</b> quitar marcador<br>
+    <b>Doble clic</b>: ver esa zona con más detalle · <b>Retroceso</b> volver<br>
+    <b>T</b> satélite / colores por altura · <b>C</b> curvas de nivel<br>
+    <b>+ / −</b> intervalo de curvas · <b>W</b> malla de alambre<br>
+    <b>S</b> sombras · <b>D</b> animar el día · <b>L</b> nombres de lugares
+  </div>
+  <div id="etiquetas"></div>
+  <div id="etiqueta"></div>
+  <div id="creditos">Alturas: AWS Terrain Tiles · Imágenes: Esri World Imagery</div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

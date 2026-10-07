@@ -1,0 +1,100 @@
+// Puntos de interés que se muestran como etiquetas sobre el terreno.
+// Se muestran automáticamente los que caen dentro de la zona cargada,
+// así que también aparecen al ir a coordenadas propias.
+// tipo: ciudad, ruinas, nevado, montana, volcan, agua, isla, mirador, naturaleza, aeropuerto
+
+export const PUNTOS = [
+  // --- Lima y la costa ---
+  { nombre: 'Lima (Plaza de Armas)',   lat: -12.0464, lon: -77.0428, tipo: 'ciudad' },
+  { nombre: 'Callao',                  lat: -12.0566, lon: -77.1181, tipo: 'ciudad' },
+  { nombre: 'Miraflores',              lat: -12.1211, lon: -77.0297, tipo: 'ciudad' },
+  { nombre: 'Aeropuerto Jorge Chávez', lat: -12.0219, lon: -77.1143, tipo: 'aeropuerto' },
+  { nombre: 'Isla San Lorenzo',        lat: -12.0850, lon: -77.2250, tipo: 'isla' },
+  { nombre: 'Huaca Pucllana',          lat: -12.1108, lon: -77.0336, tipo: 'ruinas' },
+  { nombre: 'Pachacámac',              lat: -12.2567, lon: -76.9006, tipo: 'ruinas' },
+  { nombre: 'Trujillo',                lat:  -8.1116, lon: -79.0287, tipo: 'ciudad' },
+  { nombre: 'Huanchaco',               lat:  -8.0800, lon: -79.1206, tipo: 'ciudad' },
+  { nombre: 'Chan Chan',               lat:  -8.1061, lon: -79.0744, tipo: 'ruinas' },
+  { nombre: 'Huacas del Sol y de la Luna', lat: -8.1336, lon: -78.9967, tipo: 'ruinas' },
+  { nombre: 'Pisco',                   lat: -13.7100, lon: -76.2033, tipo: 'ciudad' },
+  { nombre: 'Paracas',                 lat: -13.8344, lon: -76.2508, tipo: 'ciudad' },
+  { nombre: 'Candelabro de Paracas',   lat: -13.7950, lon: -76.3087, tipo: 'ruinas' },
+  { nombre: 'Islas Ballestas',         lat: -13.7369, lon: -76.3958, tipo: 'isla' },
+  { nombre: 'Ica',                     lat: -14.0678, lon: -75.7286, tipo: 'ciudad' },
+  { nombre: 'Oasis de Huacachina',     lat: -14.0875, lon: -75.7633, tipo: 'agua' },
+  { nombre: 'Nasca',                   lat: -14.8309, lon: -74.9381, tipo: 'ciudad' },
+  { nombre: 'Líneas de Nasca: el Colibrí', lat: -14.6922, lon: -75.1489, tipo: 'ruinas' },
+
+  // --- Sierra norte ---
+  { nombre: 'Cajamarca',               lat:  -7.1617, lon: -78.5128, tipo: 'ciudad' },
+  { nombre: 'Baños del Inca',          lat:  -7.1647, lon: -78.4644, tipo: 'agua' },
+  { nombre: 'Huaraz',                  lat:  -9.5278, lon: -77.5278, tipo: 'ciudad' },
+  { nombre: 'Caraz',                   lat:  -9.0486, lon: -77.8106, tipo: 'ciudad' },
+  { nombre: 'Yungay',                  lat:  -9.1389, lon: -77.7447, tipo: 'ciudad' },
+  { nombre: 'Carhuaz',                 lat:  -9.2817, lon: -77.6450, tipo: 'ciudad' },
+  { nombre: 'Huascarán (6768 m)',      lat:  -9.1217, lon: -77.6044, tipo: 'nevado' },
+  { nombre: 'Huandoy (6395 m)',        lat:  -9.0333, lon: -77.6667, tipo: 'nevado' },
+  { nombre: 'Alpamayo (5947 m)',       lat:  -8.8797, lon: -77.6539, tipo: 'nevado' },
+  { nombre: 'Lagunas de Llanganuco',   lat:  -9.0750, lon: -77.6500, tipo: 'agua' },
+  { nombre: 'Laguna 69',               lat:  -9.0106, lon: -77.6122, tipo: 'agua' },
+  { nombre: 'Laguna Parón',            lat:  -8.9978, lon: -77.6869, tipo: 'agua' },
+  { nombre: 'Chavín de Huántar',       lat:  -9.5928, lon: -77.1772, tipo: 'ruinas' },
+  { nombre: 'Nevado Pastoruri',        lat:  -9.9233, lon: -77.1897, tipo: 'nevado' },
+  { nombre: 'Yerupajá (6635 m)',       lat: -10.2667, lon: -76.9000, tipo: 'nevado' },
+  { nombre: 'Chachapoyas',             lat:  -6.2317, lon: -77.8690, tipo: 'ciudad' },
+  { nombre: 'Kuélap',                  lat:  -6.4183, lon: -77.9233, tipo: 'ruinas' },
+  { nombre: 'Catarata de Gocta',       lat:  -6.0267, lon: -77.8858, tipo: 'agua' },
+
+  // --- Sierra central ---
+  { nombre: 'Lago Junín (Chinchaycocha)', lat: -11.0000, lon: -76.1200, tipo: 'agua' },
+  { nombre: 'Junín',                   lat: -11.1592, lon: -75.9933, tipo: 'ciudad' },
+  { nombre: 'Huaytapallana (5557 m)',  lat: -11.9200, lon: -75.0500, tipo: 'nevado' },
+  { nombre: 'Ayacucho',                lat: -13.1588, lon: -74.2232, tipo: 'ciudad' },
+  { nombre: 'Pampa de Quinua (Batalla de Ayacucho)', lat: -13.0440, lon: -74.1350, tipo: 'ruinas' },
+
+  // --- Cusco ---
+  { nombre: 'Cusco (Plaza de Armas)',  lat: -13.5163, lon: -71.9785, tipo: 'ciudad' },
+  { nombre: 'Sacsayhuamán',            lat: -13.5089, lon: -71.9817, tipo: 'ruinas' },
+  { nombre: 'Machu Picchu',            lat: -13.1631, lon: -72.5450, tipo: 'ruinas' },
+  { nombre: 'Huayna Picchu',           lat: -13.1575, lon: -72.5464, tipo: 'montana' },
+  { nombre: 'Aguas Calientes',         lat: -13.1547, lon: -72.5254, tipo: 'ciudad' },
+  { nombre: 'Intipunku (Puerta del Sol)', lat: -13.1700, lon: -72.5360, tipo: 'ruinas' },
+  { nombre: 'Ollantaytambo',           lat: -13.2583, lon: -72.2633, tipo: 'ruinas' },
+  { nombre: 'Pisac',                   lat: -13.4231, lon: -71.8478, tipo: 'ciudad' },
+  { nombre: 'Urubamba',                lat: -13.3047, lon: -72.1158, tipo: 'ciudad' },
+  { nombre: 'Calca',                   lat: -13.3222, lon: -71.9564, tipo: 'ciudad' },
+  { nombre: 'Chinchero',               lat: -13.3925, lon: -72.0478, tipo: 'ciudad' },
+  { nombre: 'Moray',                   lat: -13.3297, lon: -72.1975, tipo: 'ruinas' },
+  { nombre: 'Salineras de Maras',      lat: -13.3036, lon: -72.1561, tipo: 'naturaleza' },
+  { nombre: 'Salkantay (6271 m)',      lat: -13.3342, lon: -72.5450, tipo: 'nevado' },
+  { nombre: 'Laguna Humantay',         lat: -13.3711, lon: -72.5847, tipo: 'agua' },
+  { nombre: 'Ausangate (6384 m)',      lat: -13.7897, lon: -71.2219, tipo: 'nevado' },
+  { nombre: 'Montaña de 7 Colores',    lat: -13.8697, lon: -71.3031, tipo: 'montana' },
+
+  // --- Sur ---
+  { nombre: 'Arequipa (Plaza de Armas)', lat: -16.3989, lon: -71.5370, tipo: 'ciudad' },
+  { nombre: 'Misti (5822 m)',          lat: -16.2944, lon: -71.4089, tipo: 'volcan' },
+  { nombre: 'Chachani (6057 m)',       lat: -16.1911, lon: -71.5303, tipo: 'volcan' },
+  { nombre: 'Ubinas (5672 m)',         lat: -16.3550, lon: -70.9030, tipo: 'volcan' },
+  { nombre: 'Chivay',                  lat: -15.6383, lon: -71.6017, tipo: 'ciudad' },
+  { nombre: 'Cabanaconde',             lat: -15.6194, lon: -71.9686, tipo: 'ciudad' },
+  { nombre: 'Cruz del Cóndor',         lat: -15.6117, lon: -71.9061, tipo: 'mirador' },
+  { nombre: 'Sabancaya (5976 m)',      lat: -15.7870, lon: -71.8570, tipo: 'volcan' },
+  { nombre: 'Ampato (6288 m)',         lat: -15.8167, lon: -71.8833, tipo: 'nevado' },
+  { nombre: 'Coropuna (6377 m)',       lat: -15.5167, lon: -72.6500, tipo: 'nevado' },
+  { nombre: 'Cotahuasi',               lat: -15.2125, lon: -72.8908, tipo: 'ciudad' },
+
+  // --- Titicaca ---
+  { nombre: 'Lago Titicaca',           lat: -15.8000, lon: -69.4000, tipo: 'agua' },
+  { nombre: 'Puno',                    lat: -15.8402, lon: -70.0219, tipo: 'ciudad' },
+  { nombre: 'Juliaca',                 lat: -15.4997, lon: -70.1333, tipo: 'ciudad' },
+  { nombre: 'Islas de los Uros',       lat: -15.8180, lon: -69.9690, tipo: 'isla' },
+  { nombre: 'Isla Taquile',            lat: -15.7720, lon: -69.6870, tipo: 'isla' },
+  { nombre: 'Isla Amantaní',           lat: -15.6600, lon: -69.7180, tipo: 'isla' },
+  { nombre: 'Sillustani',              lat: -15.7206, lon: -70.1544, tipo: 'ruinas' },
+  { nombre: 'Isla del Sol (Bolivia)',  lat: -16.0167, lon: -69.1667, tipo: 'isla' },
+  { nombre: 'Copacabana (Bolivia)',    lat: -16.1667, lon: -69.0861, tipo: 'ciudad' },
+
+  // --- Selva ---
+  { nombre: 'Iquitos',                 lat:  -3.7491, lon: -73.2538, tipo: 'ciudad' },
+];
