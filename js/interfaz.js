@@ -61,10 +61,45 @@ export function crearInterfaz(acciones) {
     acciones.tecla(e.key.toLowerCase());
   });
 
+  // Botones con las mismas acciones que el teclado (para pantallas táctiles)
+  const botones = [...document.querySelectorAll('#botones [data-tecla]')];
+  botones.forEach(b => b.addEventListener('click', () => {
+    acciones.tecla(b.dataset.tecla);
+    b.blur();
+  }));
+
+  // Panel plegable: en celulares empieza plegado para que se vea el terreno
+  const info = $('info');
+  if (matchMedia('(max-width: 600px)').matches) info.classList.add('plegado');
+  $('plegar').addEventListener('click', () => info.classList.toggle('plegado'));
+
+  // Copiar el enlace de la vista actual (la URL ya guarda lugar, agua y hora)
+  const compartir = $('compartir');
+  compartir.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      compartir.textContent = '¡Copiado!';
+    } catch {
+      prompt('Copia este enlace:', location.href);
+    }
+    setTimeout(() => { compartir.textContent = 'Copiar enlace'; }, 1500);
+    compartir.blur();
+  });
+
   return {
     get tamano() { return +tamano.value; },
+    set tamano(n) { if ([...tamano.options].some(o => +o.value === n)) tamano.value = n; },
+    marcarLugar(i) { menu.value = i ?? ''; if (i == null) menu.selectedIndex = -1; },
+    // activos: { t: true, c: false, ... } -> resalta los botones encendidos
+    marcarBotones(activos) {
+      botones.forEach(b => b.classList.toggle('activo', !!activos[b.dataset.tecla]));
+    },
     mostrarDatos(texto) { datos.textContent = texto; },
     mostrarFoto(texto) { $('foto').textContent = texto; },
+    mostrarEdificios(texto) {
+      $('edificiosTxt').textContent = texto ? `Edificios 3D: ${texto}` : '';
+      $('edificiosTxt').style.display = texto ? 'block' : 'none';
+    },
     permitirVolver(si) { volver.disabled = !si; },
     configurarNivel(min, max, valor) {
       nivel.min = Math.floor(min);

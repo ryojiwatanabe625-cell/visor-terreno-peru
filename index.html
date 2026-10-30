@@ -4,21 +4,33 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Visor de Terreno del Perú</title>
+  <meta name="description" content="Relieve 3D del Perú en el navegador: nevados, volcanes, cañones, lagos y sitios arqueológicos con datos reales de altura, agua, sol y sombras.">
+  <meta name="theme-color" content="#9cc3e6">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Visor de Terreno del Perú">
+  <meta property="og:description" content="Relieve 3D del Perú con datos reales de altura y fotos satelitales (WebGL + shaders GLSL).">
+  <meta property="og:url" content="https://ryojiwatanabe625-cell.github.io/visor-terreno-peru/">
   <link rel="stylesheet" href="css/estilos.css">
   <script type="importmap">
   { "imports": {
     "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/",
+    "@mapbox/vector-tile": "https://cdn.jsdelivr.net/npm/@mapbox/vector-tile@2.0.3/+esm",
+    "pbf": "https://cdn.jsdelivr.net/npm/pbf@4.0.1/+esm",
+    "pmtiles": "https://cdn.jsdelivr.net/npm/pmtiles@3.2.1/+esm"
   }}
   </script>
 </head>
 <body>
   <div id="info">
+    <button id="plegar" title="Mostrar / ocultar el panel">☰ Panel</button>
+    <div id="contenido">
     <select id="lugar"></select>
     <select id="tamano">
-      <option value="3">Zona normal</option>
-      <option value="5">Zona grande</option>
-      <option value="7">Zona muy grande</option>
+      <option value="3">Zona chica</option>
+      <option value="5" selected>Zona normal</option>
+      <option value="7">Zona grande</option>
+      <option value="9">Zona muy grande</option>
     </select>
     <div>Coordenadas: <input type="text" id="coords" placeholder="-13.16, -72.54">
       <select id="zoomPropio">
@@ -29,20 +41,38 @@
       <button id="ir">Ir</button></div>
     <div id="datos">Cargando…</div>
     <div><span id="foto"></span> <button id="volver" disabled>⟵ Volver</button></div>
+    <div id="edificiosTxt" style="display:none"></div>
     <div>Agua: <input type="range" id="nivel" step="1"> <span id="nivelTxt">sin agua</span></div>
     <div>Hora: <input type="range" id="hora" min="6.5" max="17.5" step="any"> <span id="horaTxt"></span></div>
     <div id="leyenda"><div id="barra"></div>
       <div id="marcas"><span style="left:2%">0</span><span style="left:36.4%">2000</span>
         <span style="left:72.7%">4000</span><span style="left:96%">5500 m</span></div></div>
+    <!-- Botones con las mismas acciones que el teclado (para celulares y tablets) -->
+    <div id="botones">
+      <button data-tecla="t">Colores</button><button data-tecla="c">Curvas</button>
+      <button data-tecla="-">−</button><button data-tecla="+">+</button>
+      <button data-tecla="w">Malla</button><button data-tecla="s">Sombras</button>
+      <button data-tecla="d">Día</button><button data-tecla="l">Nombres</button>
+      <button data-tecla="b">Edificios</button>
+      <button id="compartir">Copiar enlace</button>
+    </div>
+    <div class="ayuda-teclado">
     <b>Clic</b> en el terreno: ver altura · <b>Esc</b> quitar marcador<br>
     <b>Doble clic</b>: ver esa zona con más detalle · <b>Retroceso</b> volver<br>
     <b>T</b> satélite / colores por altura · <b>C</b> curvas de nivel<br>
     <b>+ / −</b> intervalo de curvas · <b>W</b> malla de alambre<br>
-    <b>S</b> sombras · <b>D</b> animar el día · <b>L</b> nombres de lugares
+    <b>S</b> sombras · <b>D</b> animar el día · <b>L</b> nombres de lugares<br>
+    <b>B</b> edificios 3D (aparecen al acercarse a una ciudad)
+    </div>
+    <div class="ayuda-tactil">
+    <b>Toca</b> el terreno: ver altura · <b>Doble toque</b>: más detalle<br>
+    <b>Un dedo</b>: girar · <b>Pellizcar</b>: acercar · <b>Dos dedos</b>: mover
+    </div>
+    </div>
   </div>
   <div id="etiquetas"></div>
   <div id="etiqueta"></div>
-  <div id="creditos">Alturas: AWS Terrain Tiles · Imágenes: Esri World Imagery</div>
+  <div id="creditos">Alturas: AWS Terrain Tiles · Imágenes: Esri World Imagery · Edificios: Overture Maps, © OpenStreetMap</div>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

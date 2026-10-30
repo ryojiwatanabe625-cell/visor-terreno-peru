@@ -53,11 +53,16 @@ Se necesita conexión a internet: los mapas y la librería Three.js se descargan
 | **S** | Activar / desactivar sombras |
 | **D** | Animar el día (el sol se mueve solo) |
 | **L** | Mostrar / ocultar los nombres de lugares |
+| **B** | Mostrar / ocultar los edificios 3D (aparecen al acercarse a menos de ~5 km de una ciudad) |
 
 En el panel:
 
 - **Menú de lugares**: 25 lugares del Perú agrupados (ciudades, arqueología, nevados, volcanes y cañones, lagos, costa).
-- **Tamaño de zona**: normal (3×3 tiles), grande (5×5) o muy grande (7×7).
+- **Tamaño de zona**: chica (3×3 tiles), normal (5×5), grande (7×7) o muy grande (9×9).
+- **Botones** con las mismas acciones que el teclado (para celulares y tablets). En pantallas
+  chicas el panel empieza plegado: se abre con **☰ Panel**.
+- **Copiar enlace**: la URL guarda el lugar, el tamaño, el agua, la hora y la cámara,
+  así que el enlace abre exactamente la misma vista.
 - **Coordenadas**: pegar latitud y longitud copiadas de Google Maps (por ejemplo `-13.16, -72.54`),
   elegir el zoom y presionar **Ir**.
 - **Foto**: muestra el zoom de la foto satelital y cuántos metros mide cada píxel. Al acercar la cámara
@@ -79,6 +84,8 @@ visor-terreno-peru/
 │   ├── terreno.frag      Fragment shader del terreno (color, luz, curvas, niebla)
 │   ├── agua.vert         Vertex shader del agua
 │   ├── agua.frag         Fragment shader del agua (olas, Fresnel, brillo)
+│   ├── edificios.vert    Vertex shader de los edificios
+│   ├── edificios.frag    Fragment shader de los edificios (ventanas procedurales, techos con foto)
 │   └── sombras.glsl      Función de sombras compartida por los dos fragment shaders
 └── js/
     ├── main.js           Programa principal: escena, cámara, carga de lugares, bucle de dibujo
@@ -90,6 +97,7 @@ visor-terreno-peru/
     ├── agua.js           Plano del agua e inundación (flood fill)
     ├── sol.js            Posición del sol y mapa de sombras
     ├── detalle.js        Nivel de detalle (LOD) de la foto satelital al acercarse
+    ├── edificios.js      Edificios 3D de OpenStreetMap (descarga, recorte y extrusión)
     ├── etiquetas.js      Etiquetas de lugares (proyección y oclusión)
     ├── seleccion.js      Clic en el terreno (ray casting)
     └── interfaz.js       Conexión del panel HTML con el visor
@@ -101,7 +109,10 @@ visor-terreno-peru/
 
 | Técnica | Dónde está | Descripción |
 |---|---|---|
-| **Mapa de alturas (heightmap)** | `terreno.js` | Un plano subdividido (hasta 512×512 vértices) cuyos vértices suben según la altura real. |
+| **Mapa de alturas (heightmap)** | `terreno.js` | Un plano subdividido (hasta 1024×1024 vértices; 512×512 en celulares) cuyos vértices suben según la altura real, leída con interpolación bilineal. |
+| **Extrusión de polígonos** | `edificios.js` | Cada contorno de edificio de OpenStreetMap se convierte en un prisma: paredes verticales y techo triangulado (con sus patios). Todos los edificios de un mosaico van en una sola geometría. |
+| **Recorte de polígonos (Sutherland-Hodgman)** | `edificios.js` | Los edificios en el borde de un mosaico se recortan para no dibujarse dos veces. |
+| **Texturas procedurales** | `edificios.frag` | Las ventanas no son una imagen: se calculan con `fract` sobre (metros a lo largo del muro, metros de altura), una fila por piso. Lejos se reemplazan por un tono promedio para evitar parpadeo (*aliasing*). Los techos usan la foto satelital real. |
 | **Proyección Web Mercator** | `mapas.js`, `terreno.js` | Conversión entre latitud/longitud, tiles del mapa y coordenadas de la escena. |
 | **Texturizado (UV mapping)** | `terreno.frag` | La foto satelital se pega sobre el relieve. Se descarga con más zoom que las alturas para que se vea nítida. |
 | **Nivel de detalle (LOD) de texturas** | `detalle.js`, `terreno.frag` | Al acercarse, se descarga una foto más nítida (hasta ~1 m por píxel) solo del área que se mira, y el shader la mezcla sobre la foto base con un borde difuminado y un fundido de entrada. Es la misma idea que usa Google Earth. |
@@ -143,6 +154,11 @@ visor-terreno-peru/
 - **Imágenes satelitales**: [Esri World Imagery](https://www.arcgis.com/home/item.html?id=10df2279f9684e4a9f6a7f08febac2a9).
 - **Librería 3D**: [Three.js](https://threejs.org) 0.170 (solo para la escena, la cámara y los controles; los shaders
   del terreno y del agua son propios).
+- **Edificios**: [Overture Maps](https://overturemaps.org) (combina © [OpenStreetMap](https://www.openstreetmap.org/copyright)
+  con Google Open Buildings y Microsoft ML Buildings; licencia ODbL), en formato PMTiles. Si Overture
+  no responde se usa [OpenFreeMap](https://openfreemap.org) (solo OpenStreetMap). Se leen con
+  [pmtiles](https://github.com/protomaps/PMTiles), [@mapbox/vector-tile](https://github.com/mapbox/vector-tile-js)
+  y [pbf](https://github.com/mapbox/pbf).
 - **Regiones naturales**: clasificación de Javier Pulgar Vidal.
 
 ## Limitaciones conocidas
