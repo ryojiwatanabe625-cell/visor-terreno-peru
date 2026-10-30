@@ -5,7 +5,7 @@
 // y el y hacia arriba (las alturas se multiplican por EXAGERAR).
 
 import * as THREE from 'three';
-import { EXAGERAR } from './config.js';
+import { EXAGERAR, MAX_SEGMENTOS } from './config.js';
 import { lonATile, latATile, tileALon, tileALat } from './mapas.js';
 
 const CIRCUNFERENCIA_TIERRA_KM = 40075.016686;
@@ -21,15 +21,26 @@ export function construirTerreno({ alturas, N, x0, y0 }, lat, nTiles) {
     return px[k] * 256 + px[k + 1] + px[k + 2] / 256 - 32768;
   };
 
-  // 2. Una cuadrícula de (SEG+1) x (SEG+1) vértices; más vértices si la zona es más grande
-  const SEG = Math.min(128 * nTiles - 1, 511);
+  // Altura en una posición con decimales del mapa: interpolación bilineal entre
+  // los 4 píxeles vecinos (así la malla no queda "escalonada")
+  const leerSuave = (x, y) => {
+    const i = Math.min(Math.floor(x), PX - 2), j = Math.min(Math.floor(y), PX - 2);
+    const fx = x - i, fy = y - j;
+    const arriba = leer(i, j) * (1 - fx) + leer(i + 1, j) * fx;
+    const abajo = leer(i, j + 1) * (1 - fx) + leer(i + 1, j + 1) * fx;
+    return arriba * (1 - fy) + abajo * fy;
+  };
+
+  // 2. Una cuadrícula de (SEG+1) x (SEG+1) vértices: un vértice por píxel de
+  //    alturas, hasta MAX_SEGMENTOS (más vértices = relieve más fino)
+  const SEG = Math.min(PX - 1, MAX_SEGMENTOS);
   const lado = SEG + 1;
   const latR = lat * Math.PI / 180;
   const anchoKm = nTiles * CIRCUNFERENCIA_TIERRA_KM * Math.cos(latR) / N;
   const alts = new Float32Array(lado * lado);
   for (let v = 0; v < alts.length; v++) {
     const i = v % lado, j = (v - i) / lado;
-    alts[v] = leer(Math.round(i * (PX - 1) / SEG), Math.round(j * (PX - 1) / SEG));
+    alts[v] = leerSuave(i * (PX - 1) / SEG, j * (PX - 1) / SEG);
   }
   const espaciadoM = anchoKm * 1000 / SEG;            // metros entre vértices vecinos
   quitarPicos(alts, lado, Math.max(500, 3 * espaciadoM));

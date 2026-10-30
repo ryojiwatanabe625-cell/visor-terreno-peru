@@ -48,7 +48,9 @@ export async function descargarMosaico(x0, y0, cuantos, urlDe, opcional = false)
 // Descarga las alturas y la foto satelital de una zona de nTiles x nTiles centrada en (lat, lon).
 // La foto se pide con 1 o 2 niveles más de zoom que las alturas (4 o 16 veces más píxeles)
 // mientras quepa en una textura: así se distinguen calles, ruinas y lagunas.
-export async function descargarZona(lat, lon, zoom, nTiles, maxTextura) {
+// Las alturas también se piden con un nivel más de zoom si la malla puede usar esos
+// píxeles extra (maxVertices = vértices por lado de la malla).
+export async function descargarZona(lat, lon, zoom, nTiles, maxTextura, maxVertices, maxZoomAlturas) {
   const N = 2 ** zoom;
   const k = (nTiles - 1) / 2;
   const x0 = Math.floor(lonATile(lon, N)) - k;
@@ -58,8 +60,11 @@ export async function descargarZona(lat, lon, zoom, nTiles, maxTextura) {
   while (extra < 2 && zoom + extra < 18 && nTiles * 2 ** (extra + 1) * 256 <= maxTextura) extra++;
   const f = 2 ** extra;
 
+  const extraAlt = zoom < maxZoomAlturas && nTiles * 256 < maxVertices ? 1 : 0;
+  const fa = 2 ** extraAlt;
+
   const [alturas, satelite] = await Promise.all([
-    descargarMosaico(x0, y0, nTiles, (x, y) => urlAltura(zoom, x, y)),
+    descargarMosaico(x0 * fa, y0 * fa, nTiles * fa, (x, y) => urlAltura(zoom + extraAlt, x, y)),
     descargarMosaico(x0 * f, y0 * f, nTiles * f, (x, y) => urlSatelite(zoom + extra, x, y), true),
   ]);
   return { alturas, satelite, N, x0, y0, zoomSatelite: zoom + extra };
