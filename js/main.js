@@ -2,7 +2,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { INTERVALOS, MAX_TEXTURA, MAX_ZOOM_ALTURAS, COLOR_CIELO_DIA } from './config.js';
+import { INTERVALOS, MAX_TEXTURA, MAX_SEGMENTOS, MAX_ZOOM_ALTURAS, COLOR_CIELO_DIA } from './config.js';
 import { LUGARES } from './lugares.js';
 import { PUNTOS } from './puntos.js';
 import { descargarZona } from './mapas.js';
@@ -15,6 +15,7 @@ import { Detalle } from './detalle.js';
 import { Sol } from './sol.js';
 import { Etiquetas } from './etiquetas.js';
 import { Seleccion } from './seleccion.js';
+import { Edificios } from './edificios.js';
 import { crearInterfaz } from './interfaz.js';
 
 // ---------- Shaders (archivos .vert/.frag/.glsl de la carpeta shaders/) ----------
@@ -23,6 +24,7 @@ async function cargarShaders() {
     sombras: 'sombras.glsl',
     terrenoVert: 'terreno.vert', terrenoFrag: 'terreno.frag',
     aguaVert: 'agua.vert', aguaFrag: 'agua.frag',
+    edificiosVert: 'edificios.vert', edificiosFrag: 'edificios.frag',
   };
   const textos = await Promise.all(Object.values(archivos).map(async archivo => {
     const r = await fetch(`shaders/${archivo}`);
@@ -61,6 +63,8 @@ const terreno = new THREE.Mesh(new THREE.BufferGeometry(), material);
 escena.add(terreno);
 const agua = new Agua(shaders, sol.uniforms, u, colorCielo);
 escena.add(agua.malla);
+const edificios = new Edificios(shaders, sol.uniforms, u);
+escena.add(edificios.grupo);
 const etiquetas = new Etiquetas(document.getElementById('etiquetas'), camara);
 const seleccion = new Seleccion(escena, camara, terreno, document.getElementById('etiqueta'));
 seleccion.conectar(render.domElement, () => zona, agua, acercarZona);
@@ -90,15 +94,102 @@ const ui = crearInterfaz({
 });
 ui.mostrarHora(hora);
 
+// ---------- Enlace para compartir ----------
+// La URL guarda lo que se está viendo, por ejemplo:
+//   #l=8&t=3&a=2400&h=16.5&cam=1.2,3.4,5.6,0.1,0.2,0.3     (lugar del menú)
+//   #lat=-13.1631&lon=-72.545&z=14&f=-13.2,-72.5&...         (coordenadas propias o doble clic)
+// Al abrir ese enlace se carga la misma zona con el mismo agua, hora y cámara.
+let hashEscrito = '';
+let esperaEnlace = null;
+const redondear = (n, d = 3) => +n.toFixed(d);
+
+function guardarEnlace() {
+  clearTimeout(esperaEnlace);
+  esperaEnlace = setTimeout(() => {
+    if (!zona || !lugarActual) return;
+    const p = new URLSearchParams();
+    const i = LUGARES.indexOf(lugarActual);
+    if (i >= 0) p.set('l', i);
+    else {
+      p.set('lat', redondear(lugarActual.lat, 5));
+      p.set('lon', redondear(lugarActual.lon, 5));
+      p.set('z', lugarActual.zoom);
+      if (lugarActual.fuente) p.set('f', lugarActual.fuente.map(n => redondear(n, 5)).join(','));
+    }
+    p.set('t', ui.tamano);
+    if (u.uAgua.value) p.set('a', agua.nivel);
+    p.set('h', redondear(hora, 2));
+    p.set('cam', [...camara.position.toArray(), ...controles.target.toArray()].map(n => redondear(n)).join(','));
+    hashEscrito = '#' + p.toString().replaceAll('%2C', ',');
+    history.replaceState(null, '', hashEscrito);
+  }, 300);
+}
+
+// Devuelve el lugar a cargar según la URL, o null si la URL no trae uno válido
+function leerEnlace() {
+  const p = new URLSearchParams(location.hash.slice(1));
+  const num = clave => p.has(clave) && Number.isFinite(+p.get(clave)) ? +p.get(clave) : null;
+  const lista = clave => p.get(clave)?.split(',').map(Number).filter(Number.isFinite);
+
+  let lugar = null;
+  const i = num('l');
+  if (i !== null && LUGARES[i]) lugar = { ...LUGARES[i], indice: i };
+  const lat = num('lat'), lon = num('lon');
+  if (!lugar && lat !== null && lon !== null && Math.abs(lat) <= 85 && Math.abs(lon) <= 180) {
+    lugar = { nombre: 'Enlace', lat, lon, zoom: Math.min(Math.max(num('z') ?? 11, 9), MAX_ZOOM_ALTURAS) };
+    const f = lista('f');
+    if (f?.length === 2) lugar.fuente = f;
+  }
+  if (!lugar) return null;
+
+  if (num('t') !== null) ui.tamano = num('t');
+  if (num('a') !== null) lugar.agua = num('a');
+  if (num('h') !== null) { hora = Math.min(Math.max(num('h'), 6.5), 17.5); ui.mostrarHora(hora); }
+  const cam = lista('cam');
+  if (cam?.length === 6) lugar.camara = cam;
+  return lugar;
+}
+
+// Si se pega otro enlace en la misma pestaña
+addEventListener('hashchange', () => {
+  if (location.hash === hashEscrito) return;
+  const lugar = leerEnlace();
+  if (!lugar) return;
+  historial.length = 0;
+  ui.permitirVolver(false);
+  cargarDesdeEnlace(lugar);
+});
+
+// Un lugar del menú se carga con el objeto original (para que el enlace guarde "l=<índice>")
+function cargarDesdeEnlace(lugar) {
+  ui.marcarLugar(lugar.indice);
+  if (lugar.indice === undefined) return cargarLugar(lugar);
+  const { agua: nivel, camara: cam } = lugar;
+  return cargarLugar(LUGARES[lugar.indice], { agua: nivel, camara: cam });
+}
+
+function marcarBotones() {
+  ui.marcarBotones({
+    t: u.uModo.value === 1, c: u.uCurvas.value, w: material.wireframe,
+    s: sol.sombras, d: animarDia, l: etiquetas.activas, b: edificios.activos,
+  });
+}
+
 // ---------- Nivel de detalle de la foto ----------
 // Cuando la cámara deja de moverse (400 ms sin cambios) se pide la foto de detalle
 let esperaDetalle = null;
 controles.addEventListener('change', () => {
   clearTimeout(esperaDetalle);
   esperaDetalle = setTimeout(() => {
-    if (zona) detalle.actualizar(zona, controles.target, camara.position.distanceTo(controles.target));
+    if (zona) {
+      const distancia = camara.position.distanceTo(controles.target);
+      detalle.actualizar(zona, controles.target, distancia);
+      edificios.actualizar(controles.target, distancia);
+    }
+    guardarEnlace();
   }, 400);
 });
+edificios.alCambiar = texto => ui.mostrarEdificios(texto);
 
 const metrosPorPixel = z => 40075016.686 * Math.cos(zona.latR) / (256 * 2 ** z);
 detalle.alCambiar = estado => {
@@ -141,15 +232,18 @@ function mostrarDatos() {
 function ponerNivelAgua(nivel) {
   const fraccion = agua.ponerNivel(nivel);
   ui.mostrarNivel(fraccion > 0 ? `${nivel} m · ${Math.round(fraccion * 100)}% bajo el agua` : 'sin agua');
+  guardarEnlace();
 }
 
 function ponerHora() {
   ui.mostrarHora(hora);
   if (zona) sol.ponerHora(hora, zona);
+  if (!animarDia) guardarEnlace();
 }
 
 // ---------- Cargar un lugar ----------
-async function cargarLugar(lugar) {
+// extra (opcional, viene de un enlace): { agua, camara } que reemplazan los del lugar
+async function cargarLugar(lugar, extra = {}) {
   const { lat, lon, zoom } = lugar;
   const nTiles = ui.tamano;                      // 3, 5 o 7 tiles por lado
   const miCarga = ++cargaActual;
@@ -162,7 +256,7 @@ async function cargarLugar(lugar) {
   let descarga;
   try {
     const maxTextura = Math.min(MAX_TEXTURA, render.capabilities.maxTextureSize);
-    descarga = await descargarZona(lat, lon, zoom, nTiles, maxTextura);
+    descarga = await descargarZona(lat, lon, zoom, nTiles, maxTextura, MAX_SEGMENTOS + 1, MAX_ZOOM_ALTURAS);
   } catch {
     if (miCarga === cargaActual) ui.mostrarDatos('No se pudieron descargar los datos de altura.');
     return;
@@ -174,6 +268,7 @@ async function cargarLugar(lugar) {
   nueva.zoom = zoom;
   nueva.zoomSatelite = descarga.zoomSatelite;
   detalle.quitar();                              // la foto de detalle era de la zona anterior
+  edificios.preparar(nueva);                     // los edificios también
   terreno.geometry.dispose();
   terreno.geometry = nueva.geo;
 
@@ -201,6 +296,11 @@ async function cargarLugar(lugar) {
   controles.enableDamping = true;
   controles.target.set(centro.x, yCentro, centro.z);
   camara.position.set(centro.x, Math.max(yCentro + anchoKm * 0.45, relieveKm * 1.3), centro.z + anchoKm * 0.45);
+  const cam = extra.camara ?? lugar.camara;              // cámara guardada en un enlace
+  if (cam) {
+    camara.position.fromArray(cam, 0);
+    controles.target.fromArray(cam, 3);
+  }
   camara.near = anchoKm / 5000;
   camara.far = anchoKm * 20;
   camara.updateProjectionMatrix();
@@ -216,12 +316,14 @@ async function cargarLugar(lugar) {
   agua.preparar(nueva, semilla);
   zona = nueva;
   detalle.alCambiar(null);
-  ponerNivelAgua(ui.configurarNivel(nueva.min, nueva.max, lugar.agua));
+  ponerNivelAgua(ui.configurarNivel(nueva.min, nueva.max, extra.agua ?? lugar.agua));
 
   // 7. Sol (su recorrido depende de la latitud), alfiler y etiquetas de lugares
   ponerHora();
   seleccion.preparar(zona);
   etiquetas.preparar(zona, PUNTOS);
+
+  edificios.actualizar(controles.target, camara.position.distanceTo(controles.target));
 
   textoZona = `Zoom ${zoom} · zona de ${anchoKm.toFixed(anchoKm < 10 ? 1 : 0)} km · altura mín: ${nueva.min.toFixed(0)} m · máx: ${nueva.max.toFixed(0)} m`;
   mostrarDatos();
@@ -238,6 +340,10 @@ function tecla(k) {
   if (k === 's') sol.sombras = !sol.sombras;
   if (k === 'd') animarDia = !animarDia;
   if (k === 'l') etiquetas.alternar();
+  if (k === 'b') {
+    edificios.alternar();
+    if (edificios.activos) edificios.actualizar(controles.target, camara.position.distanceTo(controles.target));
+  }
   if (k === 'escape') seleccion.ocultar();
   if (k === 'backspace') volver();
   if (k === '+' || k === '=' || k === '-') {
@@ -246,6 +352,8 @@ function tecla(k) {
     u.uCurvas.value = true;
   }
   mostrarDatos();
+  marcarBotones();
+  if (k === 'd' && !animarDia) guardarEnlace();
 }
 
 addEventListener('resize', () => {
@@ -277,4 +385,7 @@ render.setAnimationLoop(ms => {
   }
 });
 
-cargarLugar(LUGARES[0]);
+marcarBotones();
+const desdeEnlace = leerEnlace();
+if (desdeEnlace) cargarDesdeEnlace(desdeEnlace);
+else cargarLugar(LUGARES[0]);
